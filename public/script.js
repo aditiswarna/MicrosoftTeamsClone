@@ -1,7 +1,7 @@
 const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined, {
-    host:'/',
+    host:'https://glacial-bayou-14208.herokuapp.com',
     port: '3001',
     //secure: 'false'
 })
