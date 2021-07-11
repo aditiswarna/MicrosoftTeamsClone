@@ -1,25 +1,31 @@
 const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
+
+//using peerjs
 const myPeer = new Peer(undefined, {
     host:'peerjs-server.herokuapp.com',
     port: '443',
     secure: 'true'
 })
+
 const myVideo = document.createElement('video')
 myVideo.muted = true
+
 const peers ={}
 
+//prompts user for permission to use a media input which produces a MediaStream
 navigator.mediaDevices.getUserMedia({
     video: true,
     audio: true
 }).then(stream => {
-    addVideoStream(myVideo, stream)
+    addVideo(myVideo, stream)
 
+    //in the event of a call
     myPeer.on('call', call => {
         call.answer(stream)
         const video = document.createElement('video')
         call.on('stream', userVideoStream => {
-            addVideoStream(video, userVideoStream)
+            addVideo(video, userVideoStream)
         })
     })
 
@@ -44,12 +50,16 @@ myPeer.on('open', id => {
     socket.emit('join-room', ROOM_ID, id)
 })
 
+
+
+//function for when another user joins call
 function connectToNewUser(userId, stream){
     const call = myPeer.call(userId, stream)
     const video = document.createElement('video')
     call.on('stream', userVideoStream => {
-        addVideoStream(video, userVideoStream)
+        addVideo(video, userVideoStream)
     })
+    //removing user when they leave
     call.on('close', () => {
         video.remove()
     })
@@ -57,7 +67,9 @@ function connectToNewUser(userId, stream){
     peers[userId] = call
 }
 
-function addVideoStream(video, stream) {
+
+//function to add video to screen
+function addVideo(video, stream) {
     video.srcObject = stream
     video.addEventListener('loadedmetadata', () => {
         video.play()
